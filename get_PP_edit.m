@@ -74,7 +74,7 @@ try
 
         
         % RC new (non funziona)
-        %[Thetap_rc,Mu_rc,Kappa_rc,L_rc,opt_rc] = pplikel_new_rc(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
+        [Thetap_rc,Mu_rc,Kappa_rc,L_rc,opt_rc] = pplikel_new_rc(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
 
         % Uncensored new (nostro)
         [Thetap_new,Mu_new,Kappa_new,LogLikel_new,opt_new] = pplikel_new(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);

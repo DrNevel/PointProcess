@@ -1,4 +1,5 @@
 function [thetap, k, loglike] = maxi_loglike(xn, wn, eta)
+%%%%% PRIMA VERSIONE, FUNZIONANTE (solo uncensored) %%%%%
 %MAXI_LOGLIKE: maximize the uncensored joint log-likelihood to derive
 %   the optimal parameters for the IG probability distribution.
 %   xn: vector of linear system for AR LS estimate

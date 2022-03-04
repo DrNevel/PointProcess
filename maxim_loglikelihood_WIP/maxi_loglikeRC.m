@@ -1,5 +1,6 @@
 function [thetap, k, Loglikel, L] = maxi_loglikeRC(xn, wn, eta, thetap, k, xt, wt)
-%%%%%%%%%% uncensored part funziona, rc no
+%%%%%%%%%% uncensored part funziona, rc no; tentativo di unificare rc e
+%%%%%%%%%% uncensored estimate
 
 %MAXI_LOGLIKE: maximize the uncensored joint log-likelihood to derive the
 %optimal parameters for the IG probability distribution.
