@@ -70,18 +70,16 @@ try
         
         disp(['Building Monovariate Point Process model...' newline])
         
-        %[Thetap,Mu,Kappa,L,opt] = pplikel_corretto(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
-
-        
+       
         % RC new (non funziona)
         [Thetap_rc,Mu_rc,Kappa_rc,L_rc,opt_rc] = pplikel_new_rc(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
 
+         % RC prof
+        [Thetap,Mu,Kappa,L,opt] = pplikel_corretto(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
+        
         % Uncensored new (nostro)
         [Thetap_new,Mu_new,Kappa_new,LogLikel_new,opt_new] = pplikel_new(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
         
-        % RC prof
-        [Thetap,Mu,Kappa,L,opt] = pplikel_corretto(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
-
         % Uncensored prof (modificata da noi)
         [Thetap_U,Mu_U,Kappa_U,opt_U] = pplikel_corretto_uncensored(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
                 
