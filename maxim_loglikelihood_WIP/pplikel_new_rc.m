@@ -59,6 +59,7 @@ end
 fprintf('Finita parte matlab\n')
 
 for j = ceil(W / delta):J
+    
     time = (j-1) * delta;
     if ~isempty(observ_ev) && (observ_ev(1) < time - W) 
         observ_ev(1) = []; % remove older event (there could be only one because we assume that in any delta interval there is at most one event)
@@ -86,10 +87,13 @@ for j = ceil(W / delta):J
         eta = weights(time, uk, opt.weight);
         %fprintf('ciclo thetap is empty\n')
         %disp(j)
-        [thetap, k] = maxi_loglikeRC(xn, wn, eta); % the uncensored loglikelihood is a good starting point
+        
+        [thetap, k, Loglikel] = maxi_loglikeRC_final_edit(xn, wn);
+        
+%         [thetap, k] = maxi_loglikeRC(xn, wn, eta); % the uncensored loglikelihood is a good starting point
 
     else
-        eta = weights(time, uk, opt.weight);
+%         eta = weights(time, uk, opt.weight);
     end
     wt = time - observ_ev(end);
     %fprintf('secondo loglikel\n')
@@ -102,19 +106,21 @@ for j = ceil(W / delta):J
     %     display(wt)
      thetaTemp = thetap;
      kTemp = k;
-    [thetap, k, L(j), loglikel] = maxi_loglikeRC(xn, wn, eta, thetap, k, xt, wt);
-    if(sum(isnan(thetap)) > 0 || sum(isnan(k)) > 0)
-        fprintf('OH NO %d!\n',j);
-        thetap = thetaTemp;
-        k = kTemp;
-        flagnan(j) = 1;
-    else
-        fprintf('yessss %d!\n',j);
-    end
+%     [thetap, k, Loglikel] = maxi_loglikeRC_final_edit(xn, wn, xt, wt, thetap, k);
+%     if(sum(isnan(thetap)) > 0 || sum(isnan(k)) > 0)
+%         fprintf('OH NO %d!\n',j);
+%         thetap = thetaTemp;
+%         k = kTemp;
+%         flagnan(j) = 1;
+%     else
+%         fprintf('yessss %d!\n',j);
+%     end
     
     %disp(loglikel)
     %disp(thetap)
-    disp(j)
+    if mod(j,6500)==0
+        disp(j)
+    end
     
     %steps(j) = steps(j) + stepsj;
     mu = thetap * xt;
@@ -123,7 +129,8 @@ for j = ceil(W / delta):J
     Kappa(j) = k;
     meanRR(j) = eta' * wn / sum(eta);
     opt.WT(j)=wt;
-    opt.LogLikel(:,j) = sum(loglikel);
+    opt.LogLikel(:,j) = sum(Loglikel);
+    
 end
 fprintf('uscito dal for\n')
 if opt.hasTheta0
@@ -134,4 +141,4 @@ end
 %opt.steps = steps;
 opt.meanRR = meanRR;
 opt.flagnan = flagnan;
-
+end

@@ -57,7 +57,7 @@ step = 1;
 while(step<10)
     GRAD = [dthL(eta,update(end),mu(update(1:end-1),xn),wn,xn) dkL(eta,update(end),mu(update(1:end-1),xn),wn)];
     HESS = [d2thL(eta,update(end),mu(update(1:end-1),xn),wn,xn) dkthL(eta,update(end),mu(update(1:end-1),xn),wn,xn)'; ...
-            dkthL(eta,update(end),mu(update(1:end-1),xn),wn,xn) d2kL(eta,update(end))                              ];
+            dkthL(eta,update(end),mu(update(1:end-1),xn),wn,xn) d2kL(eta,update(end))       ];
     FIX = GRAD/HESS;
     update = update - FIX;
     step = step + 1;
