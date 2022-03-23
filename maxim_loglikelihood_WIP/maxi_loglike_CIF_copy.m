@@ -25,11 +25,7 @@ InvGauss = ...
 %%%%%%%% Cumulative distribution of Inverse Gaussian
 CumIG= ...
 @(w,k,mu)          normcdf(sqrt(k./w).*((w./mu)-1)) + ...
-                   exp((2*k./mu) + log(normcdf(-(sqrt(k./w)).*((w./mu)+1))));                       
- 
-%%%%%%%% LogLikelihood
-% loglikel = ...to do
-% @(w,k,wn,mu)        
+                   exp((2*k./mu) + log(normcdf(-(sqrt(k./w)).*((w./mu)+1))));                             
 
 %%%%%%%% 1st Order Derivatives of Inverse Gaussian pdf
 dkIG = ...
@@ -110,16 +106,11 @@ else
             Loglikel_pre = sum ( log( InvGauss(wn, mu(update(1:end-1), xn), update(end)) ./ (1-CumIG(wn ,update(end), mu(update(1:end-1),xn))) ) ) - ...
                     sum ( (InvGauss(WT, mu(update(1:end-1), xt'), update(end)) ./ (1-CumIG(WT,update(end),mu(update(1:end-1),xt'))) ) )*0.005 ;
 
-%            Loglikel_pre = sum ( log( InvGauss(wn, mu(update(1:end-1), xn), update(end)) ./ (1-CumIG(wn ,update(end), mu(update(1:end-1),xn))) ) ) - ...
-%                      ( (InvGauss(wt, mu(update(1:end-1), xt'), update(end)) ./ (1-CumIG(wt,update(end),mu(update(1:end-1),xt'))) ) ) * 0.005 ;
-
             GRAD_u = eval_grad(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, update, wn, xn);
             GRAD_rc = eval_grad_rc(CumIG, dkIG, dkCumIG, dthIG, dthCumIG, InvGauss, mu, update, wt, xt);
             
-%             GRAD = GRAD_u - GRAD_rc;
             GRAD = GRAD_u - GRAD_rc';
 
-            % Hessiana approssimata
             HESS= eval_hess(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, update, wn, xn);
            
             FIX = GRAD/HESS;
@@ -129,10 +120,6 @@ else
             Loglikel= sum ( log( InvGauss(wn, mu(updateTemp(1:end-1), xn), updateTemp(end)) ./ (1-CumIG(wn ,updateTemp(end), mu(updateTemp(1:end-1),xn))) ) ) - ...
                     sum (InvGauss(WT, mu(updateTemp(1:end-1), xt'), updateTemp(end)) ./ (1-CumIG(WT,updateTemp(end),mu(updateTemp(1:end-1),xt'))) )*0.005 ; 
              
-            % Loglikel= sum ( log( InvGauss(wn, mu(updateTemp(1:end-1), xn), updateTemp(end)) ./ (1-CumIG(wn ,updateTemp(end), mu(updateTemp(1:end-1),xn))) ) ) - ...
-            %                      (InvGauss(wt, mu(updateTemp(1:end-1), xt'), updateTemp(end)) ./ (1-CumIG(wt,updateTemp(end),mu(updateTemp(1:end-1),xt'))) ) * 0.005 ; 
-            % 
-
             if ((Loglikel-Loglikel_pre)>10e-10)
                 update=updateTemp;
             else
@@ -146,7 +133,7 @@ else
         k       = update(end);      
         L= InvGauss(wt, mu(thetap, xt'), k) ./ (1-CumIG(wt,k,mu(thetap,xt'))) ;
         Loglikel= sum ( log( InvGauss(wn, mu(thetap, xn), k) ./ (1-CumIG(wn ,k, mu(thetap,xn))) ) ) - ...
-                    (InvGauss(wt, mu(thetap, xt'), k) ./ (1-CumIG(wt,k,mu(thetap,xt'))) )* 0.005 ; 
+                   sum (InvGauss(WT, mu(thetap, xt'), k) ./ (1-CumIG(WT,k,mu(thetap,xt'))) )* 0.005 ; 
 
 
 end
