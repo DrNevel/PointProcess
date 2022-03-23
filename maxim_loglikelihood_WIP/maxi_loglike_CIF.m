@@ -126,6 +126,9 @@ else
             
             % updateTemp
             updateTemp = update - FIX;
+            if updateTemp(end)<0
+                break;
+            end
             Loglikel= sum ( log( InvGauss(wn, mu(updateTemp(1:end-1), xn), updateTemp(end)) ./ (1-CumIG(wn ,updateTemp(end), mu(updateTemp(1:end-1),xn))) ) ) - ...
                     sum (InvGauss(WT, mu(updateTemp(1:end-1), xt'), updateTemp(end)) ./ (1-CumIG(WT,updateTemp(end),mu(updateTemp(1:end-1),xt'))) )*0.005 ; 
              

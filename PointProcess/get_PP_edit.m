@@ -71,7 +71,7 @@ end
         disp(['Building Monovariate Point Process model...' newline])
         
         % RC prof
-        [Thetap_prof,Mu_prof,Kappa_prof,L_prof,opt_prof] = pplikel_corretto(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
+%         [Thetap_prof,Mu_prof,Kappa_prof,L_prof,opt_prof] = pplikel_corretto(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
                
         % CIF new 
         [Thetap_cif,Mu_cif,Kappa_cif,L_cif,opt_cif] = pplikel_cif(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
