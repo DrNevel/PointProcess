@@ -1,4 +1,4 @@
-function [thetap, k, Loglikel, L] = maxi_loglike_CIF(xn, wn, xt, wt, thetap, k)
+function [thetap, k, Loglikel, L] = maxi_loglike_CIF_copy(xn, wn, xt, wt, thetap, k)
 %MAXI_LOGLIKE: maximize the joint log-likelihood of the POINT PROCESS (CIF) to derive the
 %optimal parameters for the IG probability distribution.
 %   xn: vector of linear system for AR LS estimate
