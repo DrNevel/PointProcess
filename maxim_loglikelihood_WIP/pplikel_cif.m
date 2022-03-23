@@ -85,13 +85,10 @@ for j = ceil(W / delta):J
         xn = [xn, toeplitz(rr(P:end-1), rr(P:-1:1))];
         xt = [xt; rr(end:-1:end-P+1)];
         eta = weights(time, uk, opt.weight);
-        %fprintf('ciclo thetap is empty\n')
-        %disp(j)
-        
-        [thetap, k, Loglikel] = maxi_loglikeRC_final_edit(xn, wn);
-        
-%         [thetap, k] = maxi_loglikeRC(xn, wn, eta); % the uncensored loglikelihood is a good starting point
 
+        % uncensored estimate
+        [thetap, k, Loglikel] = maxi_loglike_CIF(xn, wn);
+        
     else
 %         eta = weights(time, uk, opt.weight);
     end
@@ -99,14 +96,16 @@ for j = ceil(W / delta):J
     if wt==0
         disp(wt)
     end
+    %eval CIF for the uncensored estimate
     [L(j)] = Lambda_eval(xt, wt, thetap, k);
      thetaTemp = thetap;
      kTemp = k;
      
     if wt>0
-        [thetap, k, Loglikel, L(j)] = maxi_loglikeRC_final_edit(xn, wn, xt, wt, thetap, k);
+        % right censoring estimate
+        [thetap, k, Loglikel, L(j)] = maxi_loglike_CIF(xn, wn, xt, wt, thetap, k);
     end 
-% % 
+
     if(sum(isnan(thetap)) > 0 || sum(isnan(k)) > 0)
 %         fprintf('OH NO %d!\n',j);
         thetap = thetaTemp;
@@ -116,14 +115,8 @@ for j = ceil(W / delta):J
 %         fprintf('yessss %d!\n',j);
     end
     
-    %disp(loglikel)
-    %disp(thetap)
     if mod(j,650)==0
         disp(j)
-    end
-
-    if j==43550
-        disp(j);
     end
     
     %steps(j) = steps(j) + stepsj;
