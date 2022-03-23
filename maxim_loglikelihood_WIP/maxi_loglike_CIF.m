@@ -146,7 +146,9 @@ else
         k       = update(end);      
         L= InvGauss(wt, mu(thetap, xt'), k) ./ (1-CumIG(wt,k,mu(thetap,xt'))) ;
         Loglikel= sum ( log( InvGauss(wn, mu(thetap, xn), k) ./ (1-CumIG(wn ,k, mu(thetap,xn))) ) ) - ...
-                    (InvGauss(wt, mu(thetap, xt'), k) ./ (1-CumIG(wt,k,mu(thetap,xt'))) )* 0.005 ; 
+                   sum (InvGauss(WT, mu(thetap, xt'), k) ./ (1-CumIG(WT,k,mu(thetap,xt'))) )* 0.005 ; 
+%         Loglikel= sum ( log( InvGauss(wn, mu(thetap, xn), k) ./ (1-CumIG(wn ,k, mu(thetap,xn))) ) ) - ...
+%                    ((InvGauss(wt, mu(thetap, xt'), k) ./ (1-CumIG(wt,k,mu(thetap,xt'))) ))* 0.005 ; 
 
 
 end
