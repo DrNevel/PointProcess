@@ -73,10 +73,10 @@ end
         % RC prof
         [Thetap_prof,Mu_prof,Kappa_prof,L_prof,opt_prof] = pplikel_corretto(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
                
-        % CIF new (uncensored funzion, rc non funziona)
+        % CIF new 
         [Thetap_cif,Mu_cif,Kappa_cif,L_cif,opt_cif] = pplikel_cif(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
 
-        % Uncensored (nostro) ---> ???
+        % Uncensored (nostro) 
         [Thetap_invg,Mu_invg,Kappa_invg,L_invg,opt_invg] = pplikel_invgauss(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
 %         
 %         % Uncensored prof (modificata da noi)
