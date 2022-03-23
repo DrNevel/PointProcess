@@ -86,7 +86,7 @@ for j = ceil(W / delta):J
         eta = weights(time, uk, opt.weight);
         %fprintf('ciclo thetap is empty\n')
         %disp(j)
-        [thetap, k] = maxi_loglikeRC(xn, wn, eta); % the uncensored loglikelihood is a good starting point
+        [thetap, k] = maxi_loglike_rc_old(xn, wn, eta); % the uncensored loglikelihood is a good starting point
 
     else
         eta = weights(time, uk, opt.weight);
@@ -102,19 +102,19 @@ for j = ceil(W / delta):J
     %     display(wt)
      thetaTemp = thetap;
      kTemp = k;
-    [thetap, k, L(j), loglikel] = maxi_loglikeRC(xn, wn, eta, thetap, k, xt, wt);
+%     [thetap, k, L(j), loglikel] = maxi_loglikeRC(xn, wn, eta, thetap, k, xt, wt);
     if(sum(isnan(thetap)) > 0 || sum(isnan(k)) > 0)
         fprintf('OH NO %d!\n',j);
         thetap = thetaTemp;
         k = kTemp;
         flagnan(j) = 1;
     else
-        fprintf('yessss %d!\n',j);
+%         fprintf('yessss %d!\n',j);
     end
     
     %disp(loglikel)
     %disp(thetap)
-    disp(j)
+%     disp(j)
     
     %steps(j) = steps(j) + stepsj;
     mu = thetap * xt;
@@ -123,7 +123,7 @@ for j = ceil(W / delta):J
     Kappa(j) = k;
     meanRR(j) = eta' * wn / sum(eta);
     opt.WT(j)=wt;
-    opt.LogLikel(:,j) = sum(loglikel);
+%     opt.LogLikel(:,j) = sum(loglikel);
 end
 fprintf('uscito dal for\n')
 if opt.hasTheta0

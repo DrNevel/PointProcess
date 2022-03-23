@@ -77,14 +77,13 @@ end
         [Thetap_cif,Mu_cif,Kappa_cif,L_cif,opt_cif] = pplikel_cif(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
 
         % Uncensored (nostro) ---> ???
-%         [Thetap_invg,Mu_invg,Kappa_invg,L_invg,opt_invg] = pplikel_invgauss(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
+        [Thetap_invg,Mu_invg,Kappa_invg,L_invg,opt_invg] = pplikel_invgauss(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
 %         
 %         % Uncensored prof (modificata da noi)
 %         [Thetap_Uprof,Mu_Uprof,Kappa_Uprof,L_Uprof,opt_Uprof] = pplikel_corretto_uncensored(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
 %         
         
-        % KS-Distance (compute only in case we have L) --> ci manca L per
-        % la uncensored old e la uncensored new
+        % KS-Distance (compute only in case we have L) 
        [KSdistance_prof,Z_prof,T_prof,ordered_prof,KSoutPerc_prof,lin_prof,lu_prof,ll_prof] = ks_plot(EKGR, L_prof, delta, 0);
        [KSdistance_cif,Z_cif,T_cif,ordered_cif,KSoutPerc_cif,lin_cif,lu_cif,ll_cif] = ks_plot(EKGR, L_cif, delta, 0);
 

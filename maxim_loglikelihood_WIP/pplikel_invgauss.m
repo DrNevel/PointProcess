@@ -89,11 +89,10 @@ for j = ceil(W / delta):J
         xt = [xt; rr(end:-1:end-P+1)];
         eta = weights(time, uk, opt.weight);
         %fprintf('ciclo thetap is empty\n')
-        %disp(j)
-        
+        disp(j)
+
         % first version: funziona se uncensored (no thetap negli input)
-        [thetap, k, loglikel] = maxi_loglike(xn, wn, eta); % the uncensored loglikelihood is a good starting point
-        
+        [thetap, k, loglikel] = maxi_loglike_invgauss(xn, wn, eta); % the uncensored loglikelihood is a good starting point
     else
         eta = weights(time, uk, opt.weight);
         
@@ -116,25 +115,19 @@ for j = ceil(W / delta):J
 %     end
     
     %disp(loglikel)
-    disp(thetap)
-    disp(k)
+%     disp(thetap)
+%     disp(k)
     
     %steps(j) = steps(j) + stepsj;
     mu = thetap * xt;
     Mu(j) = mu;
-    disp(mu);
+%     disp(mu);
     Thetap(:,j) = thetap;
     Kappa(j) = k;
     meanRR(j) = eta' * wn / sum(eta);
     opt.WT(j)=wt;
     opt.LogLikel(:,j) = sum(loglikel);
     
-    %%%%% aggiunto %%%%%
-%     opt.LL_estim(j) = LL_estim;
-%     opt.L_estim(j) = L_estim;
-%     opt.IG_estim(j) = IG_estim;
-%     opt.CIG_estim(j) = CIG_estim;
-    %%%%%%%%%%%%%%%%%%%%%
 end
 fprintf('uscito dal for\n')
 if opt.hasTheta0

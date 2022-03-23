@@ -133,7 +133,7 @@ end
 % Extract Features
 % PointProcess
 if get_PointProcess
-        [Features.PP_new.Mono, Features.PP_U.Mono, Features.PP.Mono] = get_PP_edit(EKGR,'W',W,'get_mono',1,'rr_corr', RR_correction,'get_spectra',get_spectra,'order', PPorderMono,'UndSampl',UndSampl);
+        [Features.PP_prof.Mono, Features.PP_cif.Mono] = get_PP_edit(EKGR,'W',W,'get_mono',1,'rr_corr', RR_correction,'get_spectra',get_spectra,'order', PPorderMono,'UndSampl',UndSampl);
         
         if get_spectra
             % SPECTRA NEW (nostra)

@@ -1,4 +1,4 @@
-function [thetap, k, L, Loglikel] = maxi_loglike_rc_old(xn, wn, eta, thetap, k, xt, wt)
+function [thetap, k, Loglikel] = maxi_loglike_rc_old(xn, wn, eta)
 %MAXI_LOGLIKE: maximize the uncensored joint log-likelihood to derive the
 %optimal parameters for the IG probability distribution.
 %   xn: vector of linear system for AR LS estimate
@@ -90,8 +90,8 @@ dthL_rc = ...
                             xt)';
                          
 %% [2] Initialize the parameters for best convergence of Newton-Raphson scheme:
-
-    if ~exist('thetap','var')
+% 
+%     if ~exist('thetap','var')
 
         %%%%%%%%%%%%%%%% UNCENSORED ESTIMATE %%%%%%%%%%%%%%%%%
 
@@ -128,75 +128,75 @@ dthL_rc = ...
         k       = update(end);
         Loglikel = loglikel(eta, k, wn, mu(thetap,xn));
 
-    else
-
-        %%%%%%%%%%%%%%%% RIGHT CENSORING ESTIMATE %%%%%%%%%%%%%%%%%
-        
-        % init
-        k0= k;
-        update = [thetap k0];
-        step=1;
-        h=eps;
-
-        while(step<10) 
-            GRAD = [dthL_rc(eta,update(end),mu(update(1:end-1),xt'),wt,xt,CIG(wt,update(end),mu(update(1:end-1),xt')),dthL(eta,update(end),mu(update(1:end-1), xt'),wt,xt')) ...
-                    dkL_rc(eta,update(end),mu(update(1:end-1),xt'),wt,CIG(wt,update(end),mu(update(1:end-1), xt')),dkL(eta,update(end),mu(update(1:end-1),xt'),wt))];
-            
-            HESS=zeros(length(update));
-            for i=1:length(update)
-                e=zeros(length(update),1)';
-                e(i)=h;
-                update_incr=update+e;
-                update_decr=update-e;
-                GRAD_incr = [dthL_rc(eta,update_incr(end),mu(update_incr(1:end-1),xt'),wt,xt,CIG(wt,update_incr(end),mu(update_incr(1:end-1),xt')),dthL(eta,update_incr(end),mu(update_incr(1:end-1), xt'),wt,xt')) ...
-                            dkL_rc(eta,update_incr(end),mu(update_incr(1:end-1),xt'),wt,CIG(wt,update_incr(end),mu(update_incr(1:end-1), xt')),dkL(eta,update_incr(end),mu(update_incr(1:end-1),xt'),wt))];
-                GRAD_decr = [dthL_rc(eta,update_decr(end),mu(update_decr(1:end-1),xt'),wt,xt,CIG(wt,update_decr(end),mu(update_decr(1:end-1),xt')),dthL(eta,update_decr(end),mu(update_decr(1:end-1), xt'),wt,xt')) ...
-                            dkL_rc(eta,update_decr(end),mu(update_decr(1:end-1),xt'),wt,CIG(wt,update_decr(end),mu(update_decr(1:end-1), xt')),dkL(eta,update_decr(end),mu(update_decr(1:end-1),xt'),wt))];        
-                hess_i=(GRAD_incr-GRAD_decr)/(2*h);
-                HESS(:,i)= hess_i';
-            end
-%             dkL_rc_xincr= dkL_rc(eta ,k ,mu(thetap+h, xt') ,wt ,CIG(wt, update(end), mu(thetap+h, xt')) ,dkL(eta, k, mu(thetap+h, xt'), wn));
-%             dkL_rc_x=dkL_rc(eta ,k ,mu(thetap, xt') ,wt ,CIG(wt, update(end), mu(thetap, xt')) ,dkL(eta, k, mu(thetap, xt'), wn));
-%           
-%             dkL_rc_xincr= dkL_rc(eta ,update(end)+h ,mu(update(1:end-1)+h, xt') ,wt ,CIG(wt, update(end)+h, mu(update(1:end-1), xt')) ,dkL(eta, update(end)+k, mu(update(1:end-1), xt'), wn));
-%             dkL_rc_x=dkL_rc(eta ,update(end) ,mu(update(1:end-1), xt') ,wt ,CIG(wt, update(end), mu(update(1:end-1), xt')) ,dkL(eta, update(end), mu(update(1:end-1), xt'), wn));
+%     else
+% 
+%         %%%%%%%%%%%%%%%% RIGHT CENSORING ESTIMATE %%%%%%%%%%%%%%%%%
+%         
+%         % init
+%         k0= k;
+%         update = [thetap k0];
+%         step=1;
+%         h=eps;
+% 
+%         while(step<10) 
+%             GRAD = [dthL_rc(eta,update(end),mu(update(1:end-1),xt'),wt,xt,CIG(wt,update(end),mu(update(1:end-1),xt')),dthL(eta,update(end),mu(update(1:end-1), xt'),wt,xt')) ...
+%                     dkL_rc(eta,update(end),mu(update(1:end-1),xt'),wt,CIG(wt,update(end),mu(update(1:end-1), xt')),dkL(eta,update(end),mu(update(1:end-1),xt'),wt))];
 %             
-%             dthL_rc_xincr=dthL_rc(eta,update(end),mu(update(1:end-1),xt'),wt,xt,CIG(wt,update(end),mu(update(1:end-1),xt')),dthL(eta,update(end),mu(update(1:end-1), xt'),wt,xt'));
-%             dthL_rc_x=dthL_rc(eta,update(end),mu(update(1:end-1),xt'),wt,xt,CIG(wt,update(end),mu(update(1:end-1),xt')),dthL(eta,update(end),mu(update(1:end-1), xt'),wt,xt'));
-%             
-%             
-%             cross = ((dkL_rc_xincr - dkL_rc_x) / 2*step) + ((dthL_rc_xincr - dthL_rc_x) /2*step);
-%             th2 = ((dthL_rc_xincr - dthL_rc_x) /2*step) + ((dthL_rc_xincr - dthL_rc_x) /2*step);
-%             k2 = ((dkL_rc_xincr - dkL_rc_x) / 2*step) + ((dkL_rc_xincr - dkL_rc_x) / 2*step);
-%             
-%             th2=[];
-%             for i=1:length(xt)
-%                 temp=update(i);
-%                 update(i)=update(i)+h;
-%                 th2=[th2 ; dthL_rc(eta,update(end),mu(update(1:end-1),xt'),wt,xt,CIG(wt,update(end),mu(update(1:end-1),xt')),dthL(eta,update(end),mu(update(1:end-1), xt'),wt,xt'))];
-%                 update(i)=temp;
+%             HESS=zeros(length(update));
+%             for i=1:length(update)
+%                 e=zeros(length(update),1)';
+%                 e(i)=h;
+%                 update_incr=update+e;
+%                 update_decr=update-e;
+%                 GRAD_incr = [dthL_rc(eta,update_incr(end),mu(update_incr(1:end-1),xt'),wt,xt,CIG(wt,update_incr(end),mu(update_incr(1:end-1),xt')),dthL(eta,update_incr(end),mu(update_incr(1:end-1), xt'),wt,xt')) ...
+%                             dkL_rc(eta,update_incr(end),mu(update_incr(1:end-1),xt'),wt,CIG(wt,update_incr(end),mu(update_incr(1:end-1), xt')),dkL(eta,update_incr(end),mu(update_incr(1:end-1),xt'),wt))];
+%                 GRAD_decr = [dthL_rc(eta,update_decr(end),mu(update_decr(1:end-1),xt'),wt,xt,CIG(wt,update_decr(end),mu(update_decr(1:end-1),xt')),dthL(eta,update_decr(end),mu(update_decr(1:end-1), xt'),wt,xt')) ...
+%                             dkL_rc(eta,update_decr(end),mu(update_decr(1:end-1),xt'),wt,CIG(wt,update_decr(end),mu(update_decr(1:end-1), xt')),dkL(eta,update_decr(end),mu(update_decr(1:end-1),xt'),wt))];        
+%                 hess_i=(GRAD_incr-GRAD_decr)/(2*h);
+%                 HESS(:,i)= hess_i';
 %             end
+% %             dkL_rc_xincr= dkL_rc(eta ,k ,mu(thetap+h, xt') ,wt ,CIG(wt, update(end), mu(thetap+h, xt')) ,dkL(eta, k, mu(thetap+h, xt'), wn));
+% %             dkL_rc_x=dkL_rc(eta ,k ,mu(thetap, xt') ,wt ,CIG(wt, update(end), mu(thetap, xt')) ,dkL(eta, k, mu(thetap, xt'), wn));
+% %           
+% %             dkL_rc_xincr= dkL_rc(eta ,update(end)+h ,mu(update(1:end-1)+h, xt') ,wt ,CIG(wt, update(end)+h, mu(update(1:end-1), xt')) ,dkL(eta, update(end)+k, mu(update(1:end-1), xt'), wn));
+% %             dkL_rc_x=dkL_rc(eta ,update(end) ,mu(update(1:end-1), xt') ,wt ,CIG(wt, update(end), mu(update(1:end-1), xt')) ,dkL(eta, update(end), mu(update(1:end-1), xt'), wn));
+% %             
+% %             dthL_rc_xincr=dthL_rc(eta,update(end),mu(update(1:end-1),xt'),wt,xt,CIG(wt,update(end),mu(update(1:end-1),xt')),dthL(eta,update(end),mu(update(1:end-1), xt'),wt,xt'));
+% %             dthL_rc_x=dthL_rc(eta,update(end),mu(update(1:end-1),xt'),wt,xt,CIG(wt,update(end),mu(update(1:end-1),xt')),dthL(eta,update(end),mu(update(1:end-1), xt'),wt,xt'));
+% %             
+% %             
+% %             cross = ((dkL_rc_xincr - dkL_rc_x) / 2*step) + ((dthL_rc_xincr - dthL_rc_x) /2*step);
+% %             th2 = ((dthL_rc_xincr - dthL_rc_x) /2*step) + ((dthL_rc_xincr - dthL_rc_x) /2*step);
+% %             k2 = ((dkL_rc_xincr - dkL_rc_x) / 2*step) + ((dkL_rc_xincr - dkL_rc_x) / 2*step);
+% %             
+% %             th2=[];
+% %             for i=1:length(xt)
+% %                 temp=update(i);
+% %                 update(i)=update(i)+h;
+% %                 th2=[th2 ; dthL_rc(eta,update(end),mu(update(1:end-1),xt'),wt,xt,CIG(wt,update(end),mu(update(1:end-1),xt')),dthL(eta,update(end),mu(update(1:end-1), xt'),wt,xt'))];
+% %                 update(i)=temp;
+% %             end
+% %             
+% %             th2=th2 - dthL_rc(eta,update(end),mu(update(1:end-1),xt'),wt,xt,CIG(wt,update(end),mu(update(1:end-1),xt')),dthL(eta,update(end),mu(update(1:end-1), xt'),wt,xt'));
+% %             
+% %             HESS = [th2 ...
+% %                    cross'; ...
+% %                    cross...
+% %                    k2];
 %             
-%             th2=th2 - dthL_rc(eta,update(end),mu(update(1:end-1),xt'),wt,xt,CIG(wt,update(end),mu(update(1:end-1),xt')),dthL(eta,update(end),mu(update(1:end-1), xt'),wt,xt'));
-%             
-%             HESS = [th2 ...
-%                    cross'; ...
-%                    cross...
-%                    k2];
-            
-            %FIX = GRAD/HESS;
-            FIX = GRAD*pinv(HESS);
-            update = update - FIX;
-            step = step + 1;
-        end
-
-        % Results
-        thetap  = update(1:end-1);
-        k       = update(end);
-        Loglikel = loglikel_rc(eta, CIG(wt,k,mu(thetap,xt')), loglikel(eta, k, wt, mu(thetap,xt')));
-        % Hazard function Lambda
-        L = IG(wt,mu(thetap,xt'),k) / (1-CIG(wt,k,mu(thetap,xt')));
-        
-    end
+%             %FIX = GRAD/HESS;
+%             FIX = GRAD*pinv(HESS);
+%             update = update - FIX;
+%             step = step + 1;
+%         end
+% 
+%         % Results
+%         thetap  = update(1:end-1);
+%         k       = update(end);
+%         Loglikel = loglikel_rc(eta, CIG(wt,k,mu(thetap,xt')), loglikel(eta, k, wt, mu(thetap,xt')));
+%         % Hazard function Lambda
+%         L = IG(wt,mu(thetap,xt'),k) / (1-CIG(wt,k,mu(thetap,xt')));
+%         
+%     end
 
 end
