@@ -1,4 +1,4 @@
-function [PP_prof, PP_cif, PP] = get_PP_edit(EKGR, varargin)
+function [PP_prof, PP_cif] = get_PP_edit(EKGR, varargin)
 
 % Copyright (C) Maximiliano Mollura and Riccardo Barbieri, 2019-2020.
 % All Rights Reserved. See LICENSE.TXT for license details.
