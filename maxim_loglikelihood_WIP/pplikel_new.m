@@ -1,6 +1,8 @@
 
-function [Thetap,Mu,Kappa,Loglikel,opt] = pplikel_new(EKGR, varargin)
-% function [Thetap,Mu,Kappa,L,opt] = pplikel(EKGR, varargin)
+function [Thetap,Mu,Kappa,L,opt] = pplikel_new(EKGR, varargin)
+%%%%%%%%%%  CREATO PER SALVARE ALCUNI DATI PER COMPARISON  %%%%%%%%%%
+
+%function [Thetap,Mu,Kappa,L,opt] = pplikel(EKGR, varargin)
 %
 %
 % Copyright (C) Luca Citi and Riccardo Barbieri, 2010-2011.
@@ -47,16 +49,9 @@ Kappa = NaN(1, J);
 steps = zeros(1, J);
 L = NaN(1, J);
 meanRR = NaN(1, J);
-Loglikel = NaN(1, J);
-opt.L = NaN(1, J);
+opt.LogLikel = NaN(1, J);
 flagnan = zeros(1,J);
-
-%%%%% aggiunti %%%%%
-% opt.LogLikel_rc = NaN(1, J);
-% opt.L_rc = NaN(1, J);
-% opt.InvGauss_rc = NaN(1, J);
-% opt.CIF_rc = NaN(1, J);
-%%%%%%%%%%%%%%%%%%%%
+% k = 1000;
 
 if isfield(opt,'thetap')
     thetap = opt.thetap;
@@ -66,10 +61,6 @@ end
 fprintf('Finita parte matlab\n')
 
 for j = ceil(W / delta):J
-%     if mod(j,5000)==0
-%         fprintf('iter %d \n',j);
-%     end
-    
     time = (j-1) * delta;
     if ~isempty(observ_ev) && (observ_ev(1) < time - W) 
         observ_ev(1) = []; % remove older event (there could be only one because we assume that in any delta interval there is at most one event)
@@ -97,18 +88,10 @@ for j = ceil(W / delta):J
         eta = weights(time, uk, opt.weight);
         %fprintf('ciclo thetap is empty\n')
         %disp(j)
+        [thetap, k, loglikel] = maxi_loglike(xn, wn, eta); % the uncensored loglikelihood is a good starting point
         
-        % first version: funziona se uncensored (no thetap negli input)
-        [thetap, k, loglikel] = maxi_loglikeRC(xn, wn, eta); % the uncensored loglikelihood is a good starting point
-        
-        % new version, with loglikelihood of the point process (CIF):
-        % work in progress
-        % GRAD analitico, HESS approssimata
-        %[thetap, k, loglikel] = maxi_loglikeRC_FINAL(xn, wn); % the uncensored loglikelihood is a good starting point
-
     else
         eta = weights(time, uk, opt.weight);
-        
     end
     wt = time - observ_ev(end);
     %fprintf('secondo loglikel\n')
@@ -119,22 +102,16 @@ for j = ceil(W / delta):J
     %     display(thetap)
     %     display(xt)
     %     display(wt)
-     
      thetaTemp = thetap;
      kTemp = k;
-     %%%%% aggiunto %%%%%
-%      [L_estim, LL_estim, IG_estim, CIG_estim] = estim(eta, thetap, k, xt, wt, wn, xn);
-     %%%%%%%%%%%%%%%%%%%%%
-     
-     %parte di right censoring: non funziona per ora
-     %[thetap, k, loglikel, L] = maxi_loglikeRC(xn, wn, eta, thetap, k, xt, wt);
-     
-    if(sum(isnan(thetap)) > 0 || sum(isnan(k)) > 0)
-        %fprintf('OH NO %d!\n',j);
-        thetap = thetaTemp;
-        k = kTemp;
-        flagnan(j) = 1;
-    end
+%      [L(j), Loglikel_rc(j), InvGauss(j), CIF_IG(j)] = estim(eta, thetap, k, xt, wt);
+%     [thetap, k, stepsj, L(j), loglikel] = maximize_loglikel(xn, wn, eta, thetap, k, xt, wt);
+%     if(sum(isnan(thetap)) > 0 || sum(isnan(k)) > 0)
+%         fprintf('OH NO %d!\n',j);
+%         thetap = thetaTemp;
+%         k = kTemp;
+%         flagnan(j) = 1;
+%     end
     
     %disp(loglikel)
     %disp(thetap)
@@ -142,21 +119,13 @@ for j = ceil(W / delta):J
     
     %steps(j) = steps(j) + stepsj;
     mu = thetap * xt;
-    Loglikel(j) = loglikel;
+    disp(mu);
     Mu(j) = mu;
     Thetap(:,j) = thetap;
     Kappa(j) = k;
     meanRR(j) = eta' * wn / sum(eta);
     opt.WT(j)=wt;
-%     opt.L(j)=L;
-    %opt.LogLikel(:,j) = sum(loglikel);
-    
-    %%%%% aggiunto %%%%%
-%     opt.LL_estim(j) = LL_estim;
-%     opt.L_estim(j) = L_estim;
-%     opt.IG_estim(j) = IG_estim;
-%     opt.CIG_estim(j) = CIG_estim;
-    %%%%%%%%%%%%%%%%%%%%%
+    opt.LogLikel(:,j) = sum(loglikel);
 end
 fprintf('uscito dal for\n')
 if opt.hasTheta0

@@ -1,4 +1,4 @@
-function [thetap, k, Loglikel, L] = maxi_loglikeRC(xn, wn, eta, thetap, k, xt, wt)
+function [thetap, k, Loglikel] = maxi_loglikeRC(xn, wn, eta, thetap, k, xt, wt)
 %%%%%%%%%% uncensored part funziona, rc no; tentativo di unificare rc e
 %%%%%%%%%% uncensored estimate
 
@@ -161,7 +161,7 @@ dthL_rc = ...
         k       = update(end);
         Loglikel = loglikel_rc(eta, CIG(wt,k,mu(thetap,xt')), loglikel(eta, k, wn, mu(thetap,xn)));
         % Hazard function Lambda
-        L = IG(wt,mu(thetap,xt'),k) / (1-CIG(wt,k,mu(thetap,xt')));
+%         L = IG(wt,mu(thetap,xt'),k) / (1-CIG(wt,k,mu(thetap,xt')));
     end
 
 end

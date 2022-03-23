@@ -1,5 +1,5 @@
 
-function [Thetap,Mu,Kappa,opt] = pplikel_corretto_uncensored(EKGR, varargin)
+function [Thetap,Mu,Kappa,L,opt] = pplikel_corretto_uncensored(EKGR, varargin)
 % function [Thetap,Mu,Kappa,L,opt] = pplikel(EKGR, varargin)
 %
 %
@@ -94,8 +94,8 @@ for j = ceil(W / delta):J
     else
         eta = weights(time, uk, opt.weight);
     end
-    %wt = time - observ_ev(end);
-    
+    wt = time - observ_ev(end);
+    [L(j)] = Lambda_eval(xt, wt, thetap', k);
 %     thetaTemp = thetap;
 %     kTemp = k;
 %     [thetap, k, stepsj, L(j), loglikel] = maximize_loglikel(xn, wn, eta, thetap, k, xt, wt);

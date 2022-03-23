@@ -1,4 +1,4 @@
-function [thetap, k, Loglikel] = maxi_loglikeRC_final_edit(xn, wn, xt, wt, thetap, k)
+function [thetap, k, Loglikel, L] = maxi_loglikeRC_final_edit(xn, wn, xt, wt, thetap, k)
 %MAXI_LOGLIKE: maximize the joint log-likelihood of the POINT PROCESS (CIF) to derive the
 %optimal parameters for the IG probability distribution.
 %   xn: vector of linear system for AR LS estimate
@@ -15,13 +15,13 @@ warning('off');
 mu = @(thetap,x) x*thetap';
 
 %%%%%%%% Inverse Gaussian pdf
-InvGauss = ...
-@(w,mu,k)          sqrt(k./(2*pi*(w.^3))).* exp(-(k*(w-mu).^2)./(2*w.*(mu.^2))) ;
+% InvGauss = ...
+% @(w,mu,k)          sqrt(k./(2*pi*(w.^3))).* exp(-(k*(w-mu).^2)./(2*w.*(mu.^2))) ;
 
 % Bonvini
-%IG_bonv = ...
-%@(w,mu,k)          exp(0.5*log(k ./ (2*pi*(w.^3))) - ...
-%                    0.5*((k*(wt - mu).^2) ./ ((mu.^2)*w)));
+InvGauss = ...
+@(w,mu,k)          exp(0.5*log(k ./ (2*pi*(w.^3))) - ...
+                   0.5*((k*(w - mu).^2) ./ ((mu.^2).*w)));
 
 %%%%%%%% Cumulative distribution of Inverse Gaussian
 CumIG= ...
@@ -74,7 +74,10 @@ if ~exist('wt','var')
         update = [AR0' k0];
         step = 1;
 
-        while(step<10)         
+        while(step<10)     
+            
+            Loglikel_pre= sum ( log( InvGauss(wn, mu(update(1:end-1), xn), update(end)) ./ (1-CumIG(wn, update(end), mu(update(1:end-1),xn))) ) ) ;
+
             % Gradiente
             GRAD = eval_grad(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, update, wn, xn);
             
@@ -84,36 +87,67 @@ if ~exist('wt','var')
             FIX = GRAD/HESS;
             
             update = update - FIX;
+            
+            Loglikel= sum ( log( InvGauss(wn, mu(update(1:end-1), xn), update(end)) ./ (1-CumIG(wn ,update(end), mu(update(1:end-1),xn))) ) ) ; % messo a 0 temporaneamnete per non avere problemi con gli output
+            
+            if (abs(Loglikel_pre-Loglikel)<10e-5)
+               break; 
+            end
+                        
             step = step + 1;
         end
         
         % Results
         thetap  = update(1:end-1);
         k       = update(end);      
-        Loglikel=0; % messo a 0 temporaneamnete per non avere problemi con gli output
-        
 else
         k0= k;
         update = [thetap , k0]; % update(end) is k /// update (1:end-1) is thetap
         step=1;
+        WT=[0.005:0.005:wt];
+%         WT=wt;
         
         while(step<10)       
+            Loglikel_pre = sum ( log( InvGauss(wn, mu(update(1:end-1), xn), update(end)) ./ (1-CumIG(wn ,update(end), mu(update(1:end-1),xn))) ) ) - ...
+                    sum ( (InvGauss(WT, mu(update(1:end-1), xt'), update(end)) ./ (1-CumIG(WT,update(end),mu(update(1:end-1),xt'))) ) )*0.005 ;
+
+%            Loglikel_pre = sum ( log( InvGauss(wn, mu(update(1:end-1), xn), update(end)) ./ (1-CumIG(wn ,update(end), mu(update(1:end-1),xn))) ) ) - ...
+%                      ( (InvGauss(wt, mu(update(1:end-1), xt'), update(end)) ./ (1-CumIG(wt,update(end),mu(update(1:end-1),xt'))) ) ) * 0.005 ;
+
             GRAD_u = eval_grad(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, update, wn, xn);
             GRAD_rc = eval_grad_rc(CumIG, dkIG, dkCumIG, dthIG, dthCumIG, InvGauss, mu, update, wt, xt);
             
-            GRAD = GRAD_u - GRAD_rc;
+%             GRAD = GRAD_u - GRAD_rc;
+            GRAD = GRAD_u - GRAD_rc';
+
             % Hessiana approssimata
             HESS= eval_hess(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, update, wn, xn);
            
             FIX = GRAD/HESS;
             
-            update = update - FIX;
+            % updateTemp
+            updateTemp = update - FIX;
+            Loglikel= sum ( log( InvGauss(wn, mu(updateTemp(1:end-1), xn), updateTemp(end)) ./ (1-CumIG(wn ,updateTemp(end), mu(updateTemp(1:end-1),xn))) ) ) - ...
+                    sum (InvGauss(WT, mu(updateTemp(1:end-1), xt'), updateTemp(end)) ./ (1-CumIG(WT,updateTemp(end),mu(updateTemp(1:end-1),xt'))) )*0.005 ; 
+             
+            % Loglikel= sum ( log( InvGauss(wn, mu(updateTemp(1:end-1), xn), updateTemp(end)) ./ (1-CumIG(wn ,updateTemp(end), mu(updateTemp(1:end-1),xn))) ) ) - ...
+            %                      (InvGauss(wt, mu(updateTemp(1:end-1), xt'), updateTemp(end)) ./ (1-CumIG(wt,updateTemp(end),mu(updateTemp(1:end-1),xt'))) ) * 0.005 ; 
+            % 
+
+            if ((Loglikel-Loglikel_pre)>10e-10)
+                update=updateTemp;
+            else
+                break;
+            end
+                
             step = step + 1;
         end
         
         thetap  = update(1:end-1);
         k       = update(end);      
-        Loglikel=0;
+        L= InvGauss(wt, mu(thetap, xt'), k) ./ (1-CumIG(wt,k,mu(thetap,xt'))) ;
+        Loglikel= sum ( log( InvGauss(wn, mu(thetap, xn), k) ./ (1-CumIG(wn ,k, mu(thetap,xn))) ) ) - ...
+                    (InvGauss(wt, mu(thetap, xt'), k) ./ (1-CumIG(wt,k,mu(thetap,xt'))) )* 0.005 ; 
 
 
 end

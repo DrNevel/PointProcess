@@ -1,4 +1,4 @@
-function [PP_new, PP_U, PP] = get_PP_edit(EKGR, varargin)
+function [PP_prof, PP_cif, PP] = get_PP_edit(EKGR, varargin)
 
 % Copyright (C) Maximiliano Mollura and Riccardo Barbieri, 2019-2020.
 % All Rights Reserved. See LICENSE.TXT for license details.
@@ -54,7 +54,7 @@ for i = 1:2:length(varargin)
     end
 end
 
-try
+% try
     
     if get_mono
         %% MONOVARIATE PP MODEL
@@ -70,56 +70,31 @@ try
         
         disp(['Building Monovariate Point Process model...' newline])
         
-       
-        % RC new (non funziona)
-        [Thetap_rc,Mu_rc,Kappa_rc,L_rc,opt_rc] = pplikel_new_rc(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
-
-         % RC prof
-        [Thetap,Mu,Kappa,L,opt] = pplikel_corretto(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
-        
-        % Uncensored new (nostro)
-        [Thetap_new,Mu_new,Kappa_new,LogLikel_new,opt_new] = pplikel_new(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
-        
-        % Uncensored prof (modificata da noi)
-        [Thetap_U,Mu_U,Kappa_U,opt_U] = pplikel_corretto_uncensored(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
-                
-          
-        %%%%% PLOT MU
-%         figure        
-%         plot(Mu_U);
-%         hold on
-%         plot(Mu_new);
-%         title('Superimposed Mu')
-%         legend('Mu Uncensored','Mu New Estimate')
-%         
-%         %%%% PLOT SHAPE FACTOR K
-%         figure
-%         plot(Kappa_U);
-%         hold on
-%         plot(Kappa_new);
-%         title('Superimposed Shape Factor')
-%         legend('K uncensored', 'Kappa new estimate')
-        
-        %%%% PLOT THETA
-%         for i=1:size(Thetap_new,1)
-%             figure
-%             plot(Thetap_U(i,:));
-%             hold on
-%             plot(Thetap_new(i,:));
-%             legend('Theta Uncensored','Theta New Estimate')
-%             title(['Theta(',  num2str(i),') uncensored vs new estimate'])
-%         end
-        
+        % RC prof
+        [Thetap_prof,Mu_prof,Kappa_prof,L_prof,opt_prof] = pplikel_corretto(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
                
+        % CIF new (uncensored funzion, rc non funziona)
+        [Thetap_cif,Mu_cif,Kappa_cif,L_cif,opt_cif] = pplikel_cif(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
+
+        % Uncensored (nostro) ---> ???
+%         [Thetap_invg,Mu_invg,Kappa_invg,L_invg,opt_invg] = pplikel_invgauss(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
+%         
+%         % Uncensored prof (modificata da noi)
+%         [Thetap_Uprof,Mu_Uprof,Kappa_Uprof,L_Uprof,opt_Uprof] = pplikel_corretto_uncensored(EKGR(:), 'hasTheta0', 1, 'delta', delta, 'P', P,'W',W);
+%         
         
         % KS-Distance (compute only in case we have L) --> ci manca L per
         % la uncensored old e la uncensored new
-       [KSdistance,Z,T,ordered,KSoutPerc,lin,lu,ll] = ks_plot(EKGR, L, delta, 0);
+       [KSdistance_prof,Z_prof,T_prof,ordered_prof,KSoutPerc_prof,lin_prof,lu_prof,ll_prof] = ks_plot(EKGR, L_prof, delta, 0);
+       [KSdistance_cif,Z_cif,T_cif,ordered_cif,KSoutPerc_cif,lin_cif,lu_cif,ll_cif] = ks_plot(EKGR, L_cif, delta, 0);
 
        % ACF
        %         [acf,lags,bounds] = autocorr(T,'NumLags',60);
-       [acf,bounds] = check_corr(Z,60,0);
-       acf_over_thr = sum(abs(acf) > bounds((bounds>0)));
+       [acf_prof,bounds_prof] = check_corr(Z_prof,60,0);
+       acf_over_thr_prof = sum(abs(acf_prof) > bounds_prof((bounds_prof>0)));
+       
+       [acf_cif,bounds_cif] = check_corr(Z_cif,60,0);
+       acf_over_thr_cif = sum(abs(acf_cif) > bounds_cif((bounds_cif>0)));
                 
         
         % Variances
@@ -128,25 +103,13 @@ try
             rrcorrection(:,1) = rrcorrection(:,1) - opt.t0; % depolarization
             cum_rrcorr = [0; cumsum(rrcorrection(1:end-1,2)-rrcorrection(1:end-1,3))];
             % Correction NEW
-            [Mu_new,Thetap_new,opt_new.Theta0,Kappa_new,opt_new.meanRR,LogLikel_new] = openECG(rrcorrection,cum_rrcorr,delta,Mu_new,Thetap_new,opt_new.Theta0,Kappa_new,opt_new.meanRR,LogLikel_new);
-            % Correction OLD UNCENSORED
-            [Mu_U,Thetap_U,opt_U.Theta0,Kappa_U,opt_U.meanRR] = openECG(rrcorrection,cum_rrcorr,delta,Mu_U,Thetap_U,opt_U.Theta0,Kappa_U,opt_U.meanRR);
+            [Mu_prof,Thetap_prof,opt_prof.Theta0,Kappa_prof,L_prof,opt_prof.meanRR,opt_prof.LogLikel] = openECG(rrcorrection,cum_rrcorr,delta,Mu_new,Thetap_new,opt_new.Theta0,Kappa_new,opt_new.meanRR,LogLikel_new);
             % Correction CENSORED
-            [Mu,Thetap,opt.Theta0,Kappa,L,opt.meanRR,opt.LogLikel] = openECG(rrcorrection,cum_rrcorr,delta,Mu,Thetap,opt.Theta0,Kappa,L,opt.meanRR,opt.LogLikel);
+            [Mu_cif,Thetap_cif,opt.Theta0,Kappa_cif,L_cif,opt_cif.meanRR,opt_cif.LogLikel] = openECG(rrcorrection,cum_rrcorr,delta,Mu,Thetap,opt.Theta0,Kappa,L,opt.meanRR,opt.LogLikel);
         end
                   
-        s2 = opt.meanRR.^3./Kappa;
-        s2_U = opt_U.meanRR.^3./Kappa_U;
-        s2_new = opt_new.meanRR.^3./Kappa_new;
-        
-        %%%% PLOT SD
-%         figure
-%         plot(s2_U);
-%         hold on
-%         plot(s2_new);
-%         title('Superimposed Sstandard Deviatiom')
-%         legend('SD uncensored', 'SD new estimate')
-        
+        s2_prof = opt.meanRR.^3./Kappa_prof;
+        s2_cif = opt_U.meanRR.^3./Kappa_cif;
         
     elseif get_biva
         %% BIVARIATE PP MODEL
@@ -226,18 +189,18 @@ try
     disp('Exiting PP Modeling...')
     % Features Saving
     if get_mono
-        % Monovariate NEW
-        PP_new.Mu = Mu_new(:,1:UndSampFact:end); clear Mu_new 
-        PP_new.Thetap = Thetap_new(:,1:UndSampFact:end); clear Thetap_new
-        if opt_new.hasTheta0,PP_new.Theta0 = opt_new.Theta0; end
-        PP_new.meanRR = opt_new.meanRR(:,1:UndSampFact:end);
-        PP_new.Kappa = Kappa_new(:,1:UndSampFact:end); clear Kappa_new
+        % Monovariate Prof RC
+        PP_prof.Mu = Mu_prof(:,1:UndSampFact:end); clear Mu_new 
+        PP_prof.Thetap = Thetap_prof(:,1:UndSampFact:end); clear Thetap_new
+        if opt_new.hasTheta0,PP_prof.Theta0 = opt_new.Theta0; end
+        PP_prof.meanRR = opt_prof.meanRR(:,1:UndSampFact:end);
+        PP_prof.Kappa = Kappa_prof(:,1:UndSampFact:end); clear Kappa_new
         %PP_new.L = L(:,1:UndSampFact:end); clear L_new
-        PP_new.s2 = s2_new(:,1:UndSampFact:end); clear s2_new
-        PP_new.delta = delta*UndSampFact;
-        PP_new.t0 = opt_new.t0;
-        PP_new.LogLikel = LogLikel_new(:,1:UndSampFact:end);
-        PP_new.L=opt_new.L;
+        PP_prof.s2 = s2_prof(:,1:UndSampFact:end); clear s2_new
+        PP_prof.delta = delta*UndSampFact;
+        PP_prof.t0 = opt_prof.t0;
+        PP_prof.LogLikel = opt_prof.LogLikel(:,1:UndSampFact:end);
+        PP_prof.L=L_prof;
         clear opt_new
         %PP_new.KSdistance = KSdistance; clear KSdistance
         %PP_new.KSoutPerc = KSoutPerc; clear KSoutPercCov
@@ -247,17 +210,17 @@ try
         %PP_new.bounds = bounds; clear bounds
         %PP_new.acf_over_thr = acf_over_thr; clear acf_over_thr
         
-        %%%% MONOVARIATE OLD UNCENSORED
-        PP_U.Mu = Mu_U(:,1:UndSampFact:end); clear Mu_U
-        PP_U.Thetap = Thetap_U(:,1:UndSampFact:end); clear Thetap_U
-        if opt_U.hasTheta0,PP_U.Theta0 = opt_U.Theta0; end
-        PP_U.meanRR = opt_U.meanRR(:,1:UndSampFact:end);
-        PP_U.Kappa = Kappa_U(:,1:UndSampFact:end); clear Kappa_U
-        %PP_U.L = L(:,1:UndSampFact:end); clear L_U
-        PP_U.s2 = s2_U(:,1:UndSampFact:end); clear s2_U
-        PP_U.delta = delta*UndSampFact;
-        PP_U.t0 = opt_U.t0;
-        %PP_U.LogLikel = LogLikel_U(:,1:UndSampFact:end); clear opt_U
+        %%%% MONOVARIATE CIF RC
+        PP_cif.Mu = Mu_cif(:,1:UndSampFact:end); clear Mu_cif
+        PP_cif.Thetap = Thetap_cif(:,1:UndSampFact:end); clear Thetap_cif
+        if opt_cif.hasTheta0,PP_cif.Theta0 = opt_cif.Theta0; end
+        PP_cif.meanRR = opt_cif.meanRR(:,1:UndSampFact:end);
+        PP_cif.Kappa = Kappa_cif(:,1:UndSampFact:end); clear Kappa_cif
+        PP_cif.L = L_cif(:,1:UndSampFact:end); clear L_cif
+        PP_cif.s2 = s2_cif(:,1:UndSampFact:end); clear s2_cif
+        PP_cif.delta = delta*UndSampFact;
+        PP_cif.t0 = opt_cif.t0;
+        PP_cif.LogLikel = opt_cif.LogLikel(:,1:UndSampFact:end); clear opt_U
         %PP_new.KSdistance = KSdistance; clear KSdistance
         %PP_new.KSoutPerc = KSoutPerc; clear KSoutPercCov
         %PP_new.Z = Z; clear Z
@@ -265,48 +228,26 @@ try
         %PP_new.acf = acf; clear acf
         %PP_new.bounds = bounds; clear bounds
         %PP_new.acf_over_thr = acf_over_thr; clear acf_over_thr
-        
-        
-        % MONOVARIATE NEW RIGHT CENSORED
-%         PP_rc.Mu = Mu_rc(:,1:UndSampFact:end); clear Mu 
-%         PP_rc.Thetap = Thetap_rc(:,1:UndSampFact:end); clear Thetap
-%         if opt_rc.hasTheta0,PP_rc.Theta0 = opt_rc.Theta0; end
-%         PP_rc.meanRR = opt_rc.meanRR_rc(:,1:UndSampFact:end);
-%         PP_rc.Kappa = Kappa_rc(:,1:UndSampFact:end); clear Kappa
-%         PP_rc.L = L_rc(:,1:UndSampFact:end); clear L
-%         PP_rc.s2 = s2_rc(:,1:UndSampFact:end); clear s2
-%         PP_rc.delta = delta*UndSampFact;
-%         PP_rc.t0 = opt_rc.t0;
-%         PP_rc.LogLikel = opt_rc.LogLikel_rc(:,1:UndSampFact:end); clear opt
-        
-        %PP_rc.KSdistance = KSdistance; clear KSdistance
-        %PP_rc.KSoutPerc = KSoutPerc; clear KSoutPercCov
-        %PP_rc.Z = Z; clear Z
-        %PP_rc.T = T; clear T
-        %PP_rc.acf = acf; clear acf
-        %PP_rc.bounds = bounds; clear bounds
-        %PP_rc.acf_over_thr = acf_over_thr; clear acf_over_thr
-        
-        
+               
         % MONOVARIATE CENSORED (prof)
-        PP.Mu = Mu(:,1:UndSampFact:end); clear Mu 
-        PP.Thetap = Thetap(:,1:UndSampFact:end); clear Thetap
-        if opt.hasTheta0,PP.Theta0 = opt.Theta0; end
-        PP.meanRR = opt.meanRR(:,1:UndSampFact:end);
-        PP.Kappa = Kappa(:,1:UndSampFact:end); clear Kappa
-        PP.L = L(:,1:UndSampFact:end); clear L
-        PP.s2 = s2(:,1:UndSampFact:end); clear s2
-        PP.delta = delta*UndSampFact;
-        PP.t0 = opt.t0;
-        PP.LogLikel = opt.LogLikel(:,1:UndSampFact:end); clear opt
-        PP.KSdistance = KSdistance; clear KSdistance
-        PP.KSoutPerc = KSoutPerc; clear KSoutPercCov
-        PP.Z = Z; clear Z
-        PP.T = T; clear T
-        PP.acf = acf; clear acf
-        PP.bounds = bounds; clear bounds
-        PP.acf_over_thr = acf_over_thr; clear acf_over_thr
-        
+%         PP.Mu = Mu(:,1:UndSampFact:end); clear Mu 
+%         PP.Thetap = Thetap(:,1:UndSampFact:end); clear Thetap
+%         if opt.hasTheta0,PP.Theta0 = opt.Theta0; end
+%         PP.meanRR = opt.meanRR(:,1:UndSampFact:end);
+%         PP.Kappa = Kappa(:,1:UndSampFact:end); clear Kappa
+%         PP.L = L(:,1:UndSampFact:end); clear L
+%         PP.s2 = s2(:,1:UndSampFact:end); clear s2
+%         PP.delta = delta*UndSampFact;
+%         PP.t0 = opt.t0;
+%         PP.LogLikel = opt.LogLikel(:,1:UndSampFact:end); clear opt
+%         PP.KSdistance = KSdistance; clear KSdistance
+%         PP.KSoutPerc = KSoutPerc; clear KSoutPercCov
+%         PP.Z = Z; clear Z
+%         PP.T = T; clear T
+%         PP.acf = acf; clear acf
+%         PP.bounds = bounds; clear bounds
+%         PP.acf_over_thr = acf_over_thr; clear acf_over_thr
+%         
     end
     if get_biva
         % Covariate
@@ -360,11 +301,11 @@ try
         PP.acf_over_thr = acf_over_thr; clear acf_over_thr
         
     end
-catch ME
-    disp('Failed')
-    disp(ME.message)
-    PP = deal([]);
-    PP.error = ME;
-end
+% catch ME
+%     disp('Failed')
+%     disp(ME.message)
+%     PP = deal([]);
+%     PP.error = ME;
+% end
 
 end

@@ -2,6 +2,10 @@ f='p002332-2151-04-11-20-58_annotations2';
 pth='Test\annotations';
 fpth=fullfile(pth,f);
 
+f='12726_data';
+pth='Sepsis_Data\Annotations4';
+fpth=fullfile(pth,f);
+
 %Features_RR=get_features_RR(fpth,'sel_EKGR',1,'fs',125,'PPorderMono',9,'get_PP',1,'UndSampl',20,'get_spectra',1,'get_TimeDomain',1,'get_Freqs',1,'get_Compl',1);
 Features_PP_Spectral=get_features_RR(fpth,'sel_EKGR',1,'fs',125,'PPorderMono',9,'get_PP',1,'UndSampl',20,'get_spectra',1,'get_TimeDomain',0,'get_Freqs',0,'get_Compl',0);
 
