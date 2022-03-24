@@ -90,7 +90,7 @@ for j = ceil(W / delta):J
         [thetap, k, Loglikel] = maxi_loglike_CIF(xn, wn);
         
     else
-%         eta = weights(time, uk, opt.weight);
+        eta = weights(time, uk, opt.weight);
     end
     wt = time - observ_ev(end);
     if wt==0
