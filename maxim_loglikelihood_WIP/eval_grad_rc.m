@@ -21,5 +21,4 @@ function GRAD_rc = eval_grad_rc(CumIG, dkIG, dkCumIG, dthIG, dthCumIG, InvGauss,
 
 % Gradient with vector wt
     GRAD_rc = ( ( ([thIG ; kIG]).*(1-CIG) + (IG).*([thCumIG ; kCumIG]) ) ./ (0.99*(1-CIG).^2) ) ;
-    GRAD_rc = sum(GRAD_rc,2)*0.005;
 end

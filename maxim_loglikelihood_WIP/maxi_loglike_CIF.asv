@@ -61,7 +61,7 @@ dthCumIG = ...
 
 %% Maximization
         
-if ~exist('wt','var')
+if ~exist('wt','var')  % UNCENSORED ESTIMATE
         k0 = 1000;
         
         if det(xn'*xn) == 0
@@ -89,8 +89,7 @@ if ~exist('wt','var')
             % Loglikel after updating
             Loglikel= sum ( log( InvGauss(wn, mu(update(1:end-1), xn), update(end)) ./ (1-CumIG(wn ,update(end), mu(update(1:end-1),xn))) ) ) ; % messo a 0 temporaneamnete per non avere problemi con gli output
             
-            % exit while loop if loglikel increase is less than 10e-5
-            if (abs(Loglikel_pre-Loglikel)<10e-5)
+            if (abs(Loglikel_pre-Loglikel)<10e-5) % exit while loop if loglikel increase is less than 10e-5
                break; 
             end
                         
@@ -100,14 +99,16 @@ if ~exist('wt','var')
         % Results
         thetap  = update(1:end-1);
         k       = update(end);      
-else   % RIGHT CENSO
+        
+else   % RIGHT CENSORING
+    
         k0= k;
-        update = [thetap , k0]; % update(end) is k /// update (1:end-1) is thetap
+        update = [thetap , k0];
         step=1;
         WT=[0.005:0.005:wt];
-%         WT=wt;
         
-        while(step<10)       
+        while(step<10)  
+            % Loglikel before updating
             Loglikel_pre = sum (eta.*( log( InvGauss(wn, mu(update(1:end-1), xn), update(end)) ./ (1-CumIG(wn ,update(end), mu(update(1:end-1),xn))) ) )) - ...
                     sum ( (InvGauss(WT, mu(update(1:end-1), xt'), update(end)) ./ (1-CumIG(WT,update(end),mu(update(1:end-1),xt'))) ) )*0.005 ;
 
@@ -127,17 +128,18 @@ else   % RIGHT CENSO
             
 %             GRAD = GRAD_u - GRAD_rc;
             GRAD = GRAD_u - (GRAD_rc_tot + GRAD_rc');
-
-            % Hessiana approssimata
             HESS= eval_hess(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, update, wn, xn, eta);
            
             FIX = GRAD/HESS;
             
-            % updateTemp
+            % temporary update
             updateTemp = update - FIX;
-            if updateTemp(end)<0
+            
+            if updateTemp(end)<0 % exit while loop if k parameter is negative
                 break;
             end
+            
+             % Loglikel after updating
             Loglikel= sum ( log( InvGauss(wn, mu(updateTemp(1:end-1), xn), updateTemp(end)) ./ (1-CumIG(wn ,updateTemp(end), mu(updateTemp(1:end-1),xn))) ) ) - ...
                     sum (InvGauss(WT, mu(updateTemp(1:end-1), xt'), updateTemp(end)) ./ (1-CumIG(WT,updateTemp(end),mu(updateTemp(1:end-1),xt'))) )*0.005 ; 
              
@@ -145,10 +147,10 @@ else   % RIGHT CENSO
             %                      (InvGauss(wt, mu(updateTemp(1:end-1), xt'), updateTemp(end)) ./ (1-CumIG(wt,updateTemp(end),mu(updateTemp(1:end-1),xt'))) ) * 0.005 ; 
             % 
 
-            if ((Loglikel-Loglikel_pre)>10e-10)
-                update=updateTemp;
+            if ((Loglikel-Loglikel_pre)>10e-10) 
+                update=updateTemp; % update estimate if loglikelihood increase is more than 10e-10
             else
-                break;
+                break; % exit while loop if loglikel increase is less than 10e-10
             end
                 
             step = step + 1;
@@ -157,7 +159,7 @@ else   % RIGHT CENSO
         thetap  = update(1:end-1);
         k       = update(end);      
         L= InvGauss(wt, mu(thetap, xt'), k) ./ (1-CumIG(wt,k,mu(thetap,xt'))) ;
-        Loglikel= sum ( log( InvGauss(wn, mu(thetap, xn), k) ./ (1-CumIG(wn ,k, mu(thetap,xn))) ) ) - ...
+        Loglikel= sum (eta.*( log( InvGauss(wn, mu(thetap, xn), k) ./ (1-CumIG(wn ,k, mu(thetap,xn))) ) )) - ...
                    sum (InvGauss(WT, mu(thetap, xt'), k) ./ (1-CumIG(WT,k,mu(thetap,xt'))) )* 0.005 ; 
 %         Loglikel= sum ( log( InvGauss(wn, mu(thetap, xn), k) ./ (1-CumIG(wn ,k, mu(thetap,xn))) ) ) - ...
 %                    ((InvGauss(wt, mu(thetap, xt'), k) ./ (1-CumIG(wt,k,mu(thetap,xt'))) ))* 0.005 ; 

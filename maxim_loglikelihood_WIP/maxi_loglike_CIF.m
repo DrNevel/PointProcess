@@ -158,7 +158,7 @@ else   % RIGHT CENSORING
         
         thetap  = update(1:end-1);
         k       = update(end);      
-        L= InvGauss(wt, mu(thetap, xt'), k) ./ (1-CumIG(wt,k,mu(thetap,xt'))) ;
+        L= InvGauss(wt, mu(thetap, xt'), k) ./ (sum(1-CumIG(WT,k,mu(thetap,xt')))*0.005) ;
         Loglikel= sum (eta.*( log( InvGauss(wn, mu(thetap, xn), k) ./ (1-CumIG(wn ,k, mu(thetap,xn))) ) )) - ...
                    sum (InvGauss(WT, mu(thetap, xt'), k) ./ (1-CumIG(WT,k,mu(thetap,xt'))) )* 0.005 ; 
 %         Loglikel= sum ( log( InvGauss(wn, mu(thetap, xn), k) ./ (1-CumIG(wn ,k, mu(thetap,xn))) ) ) - ...
