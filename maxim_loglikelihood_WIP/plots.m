@@ -5,16 +5,16 @@ delta=0.005;
 
 
 figure,
-plot(Mu_cif)
+plot(Mu)
 hold on 
-plot(Mu_cif_rc)
+plot(Mu_prof)
 legend('CIF u','CIF rc')
 
 figure,
 plot(Kappa_prof)
 hold on 
 plot(Kappa)
-legend('CIF rc','prof rc')
+legend('rc prof','cif rc')
     
 figure,
 i=1;

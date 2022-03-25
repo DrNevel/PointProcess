@@ -87,7 +87,7 @@ for j = ceil(W / delta):J
         eta = weights(time, uk, opt.weight);
 
         % uncensored estimate
-        [thetap, k, Loglikel] = maxi_loglike_CIF(xn, wn);
+        [thetap, k, Loglikel] = maxi_loglike_CIF(xn, wn, eta);
         
     else
         eta = weights(time, uk, opt.weight);
@@ -103,7 +103,7 @@ for j = ceil(W / delta):J
      
     if wt>0
         % right censoring estimate
-        [thetap, k, Loglikel, L(j)] = maxi_loglike_CIF(xn, wn, xt, wt, thetap, k, eta);
+        [thetap, k, Loglikel, L(j)] = maxi_loglike_CIF(xn, wn, eta, xt, wt, thetap, k);
     end 
 
     if(sum(isnan(thetap)) > 0 || sum(isnan(k)) > 0)

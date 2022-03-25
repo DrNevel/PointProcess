@@ -5,3 +5,5 @@ Test/Images/
 Test/PP/
 Sepsis_Data/
 Workspaces/
+plots.m
+*.fig

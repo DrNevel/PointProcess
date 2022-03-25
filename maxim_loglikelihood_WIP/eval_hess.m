@@ -1,4 +1,4 @@
-function HESS = eval_hess(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, update, wn, xn)
+function HESS = eval_hess(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, update, wn, xn, eta)
 
     % init
     HESS=zeros(length(update)); 
@@ -11,8 +11,8 @@ function HESS = eval_hess(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, updat
             incr(i) = incr(i) + step;
             decr(i) = decr(i) - step;
 
-            GRAD_incr = eval_grad(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, incr, wn, xn);
-            GRAD_decr = eval_grad(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, decr, wn, xn);
+            GRAD_incr = eval_grad(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, incr, wn, xn, eta);
+            GRAD_decr = eval_grad(CumIG, dkLogIG, dkCumIG, dthLogIG, dthCumIG, mu, decr, wn, xn, eta);
             
             HESS(i,:)= (GRAD_incr - GRAD_decr ) ./ (2*step);
 
