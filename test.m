@@ -1,6 +1,6 @@
-f='p002332-2151-04-11-20-58_annotations2';
-pth='Test\annotations';
-fpth=fullfile(pth,f);
+%f='p002332-2151-04-11-20-58_annotations2';
+%pth='Test\annotations';
+%fpth=fullfile(pth,f);
 
 f='12726_data';
 pth='Sepsis_Data\Annotations4';
